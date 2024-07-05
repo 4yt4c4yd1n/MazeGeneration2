@@ -1,4 +1,4 @@
-![Maze](examples/maze.gif)
+![Maze](examples/maze.gif = 250x250)
 
 Usages:
 

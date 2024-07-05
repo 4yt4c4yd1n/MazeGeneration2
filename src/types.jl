@@ -2,39 +2,10 @@ mutable struct Node
     position::Tuple{Int, Int}
     connections::Vector{Bool}
     visited::Bool
-    dir::Union{Int, Nothing}
     neighbors::Vector{Union{Node, Nothing}}
-    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false, nothing, Vector{Union{Node, Nothing}}([nothing, nothing, nothing, nothing]))
+    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false, Vector{Union{Node, Nothing}}([nothing, nothing, nothing, nothing]))
 end
 neighbors(n::Node) = n.neighbors
-
-function Base.show(io::IO, n::Node)
-    if n.visited
-        print(io,  " [n]$(n.position) ")
-    else
-        print(io,  "  N $(n.position) ")
-    end
-    if (n.connections[1])
-        print(io, "⬆ ")
-    else
-        print(io, "✖ ")
-    end
-    if (n.connections[2])
-        print(io, "⬅ ")
-    else
-        print(io, "✖ ")
-    end
-    if (n.connections[4])
-        print(io, "➡ ")
-    else
-        print(io, "✖ ")
-    end
-    if (n.connections[3])
-        print(io, "⬇")
-    else
-        print(io, "✖")
-    end
-end
 
 function neighbors(node::Node, nodes::Matrix{Node})
     hood = []
@@ -71,11 +42,12 @@ end
 mutable struct Maze
 
     path::Union{Vector{Node}, Nothing}
-    short_path::Union{Vector{Tuple{Node, Int}}, Nothing}
+    short_path::Union{Vector{Node}, Nothing}
     visual::Union{MazeViz, Nothing}
     nodes::Matrix{Node}
     start::Union{Tuple{Int, Int}, Nothing}
     goal::Union{Tuple{Int, Int}, Nothing}
+    curr_node::Union{Node, Nothing}
 
     function Maze(height::Int, width::Int)
         Lab = Matrix{Node}(undef, height, width)
@@ -93,34 +65,6 @@ mutable struct Maze
 
             end
         end
-        return new(nothing, nothing, nothing, Lab)
-    end
-end
-
-
-function Base.show(io::IO, lab::Maze)
-    viz = lab.visual
-    for i in 1:size(viz.walls, 1)
-        for n in 1:size(viz.walls, 2)
-            print(io, join(viz.walls[i,n]))
-        end
-        println(io)
-    end
-    if !isnothing(lab.start) && !isnothing(lab.goal)
-        println(io, "Start: ", lab.start, ", Goal: ", lab.goal)
-    end
-    if !isnothing(lab.path)
-        print(io, "Right hand path: ")
-        for i in 1:(length(lab.path)-1)
-            print(io, lab.path[i].position, " ⇒ ")
-        end
-        println(io, lab.path[end].position)
-    end
-    if !isnothing(lab.short_path)
-        print(io, "Shortest path: ")
-        for i in 1:(length(lab.short_path)-1)
-            print(io, lab.short_path[i][1].position, " ⇒ ")
-        end
-        println(io, lab.short_path[end][1].position)
+        return new(nothing, nothing, nothing, Lab, nothing, nothing, nothing)
     end
 end

@@ -1,4 +1,4 @@
-![Maze](examples/maze.gif = 250x250)
+<img src="examples/maze2.gif" width="250">
 
 Usages:
 

@@ -36,14 +36,10 @@ function neighbors(node::Node, nodes::Matrix{Node})
     return hood
 end
 
-struct MazeViz
-    walls::Vector{String}
-end
 mutable struct Maze
 
     path::Union{Vector{Node}, Nothing}
     short_path::Union{Vector{Node}, Nothing}
-    visual::Union{MazeViz, Nothing}
     nodes::Matrix{Node}
     start::Union{Tuple{Int, Int}, Nothing}
     goal::Union{Tuple{Int, Int}, Nothing}
@@ -65,6 +61,6 @@ mutable struct Maze
 
             end
         end
-        return new(nothing, nothing, nothing, Lab, nothing, nothing, nothing)
+        return new(nothing, nothing, Lab, nothing, nothing, nothing)
     end
 end

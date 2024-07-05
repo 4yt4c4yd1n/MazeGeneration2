@@ -8,19 +8,21 @@ function frame(lab::Maze, scale, renderer)
     SDL_SetRenderDrawColor(renderer, 241, 242, 246, 255)
     points = []
     for node in lab.nodes
-        cell_min = ((node.position[1])*scale, (node.position[2])*scale) 
-        cell_max = ((node.position[1])*scale + scale, (node.position[2])*scale + scale)
+        min_x = node.position[2]*scale
+        min_y = node.position[1]*scale
+        max_x = (node.position[2])*scale + scale
+        max_y = (node.position[1])*scale + scale
         if !node.connections[1]
-            SDL_RenderDrawLine(renderer, cell_min[1], cell_min[2], cell_min[1], cell_max[2])
+            SDL_RenderDrawLine(renderer, min_x, min_y, max_x, min_y)
         end
         if !node.connections[2]
-            SDL_RenderDrawLine(renderer, cell_min[1], cell_min[2], cell_max[1], cell_min[2])
+            SDL_RenderDrawLine(renderer, min_x, min_y, min_x, max_y)
         end
         if !node.connections[3]
-            SDL_RenderDrawLine(renderer, cell_max[1], cell_min[2], cell_max[1], cell_max[2])
+            SDL_RenderDrawLine(renderer, min_x, max_y, max_x, max_y)
         end
         if !node.connections[4]
-            SDL_RenderDrawLine(renderer, cell_min[1], cell_max[2], cell_max[1], cell_max[2])
+            SDL_RenderDrawLine(renderer, max_x, min_y, max_x, max_y)
         end
     end
     for tPoint in points
@@ -28,31 +30,31 @@ function frame(lab::Maze, scale, renderer)
     end
     if !isnothing(lab.curr_node)
         SDL_SetRenderDrawColor(renderer,  94, 40, 37, 255)
-        curr = Ref(SDL_Rect(lab.curr_node.position[1]*scale+2, lab.curr_node.position[2]*scale+2, scale-4, scale-4))
+        curr = Ref(SDL_Rect(lab.curr_node.position[2]*scale+2, lab.curr_node.position[1]*scale+2, scale-4, scale-4))
         SDL_RenderFillRect(renderer, curr)
     end
 end
-function pathFrame(lab::Maze, scale, renderer, short=false)
+function pathFrame(lab::Maze, scale, renderer, node,  short=false)
 
-    if !isnothing(lab.curr_node)
+    if !isnothing(node)
 
-        curr_y = lab.curr_node.position[1]*scale+2
-        curr_x = lab.curr_node.position[2]*scale+2
+        curr_y = node.position[1]*scale+2
+        curr_x = node.position[2]*scale+2
         h = scale -3
         w = scale -3
 
-        if lab.curr_node.connections[1]
+        if node.connections[1]
             curr_y -= 2
             h += 2
         end
-        if lab.curr_node.connections[2]
+        if node.connections[2]
             curr_x -=2
             w += 2
         end
-        if lab.curr_node.connections[3]
+        if node.connections[3]
             h += 2
         end
-        if lab.curr_node.connections[4]
+        if node.connections[4]
             w += 2
         end
 
@@ -61,7 +63,7 @@ function pathFrame(lab::Maze, scale, renderer, short=false)
         else
             SDL_SetRenderDrawColor(renderer, 94, 40, 37, 255)
         end
-        curr = Ref(SDL_Rect(curr_y, curr_x, h, w))
+        curr = Ref(SDL_Rect(curr_x, curr_y, w, h))
         SDL_RenderFillRect(renderer, curr)
     end
 end
@@ -96,7 +98,7 @@ function visualize(lab::Maze, scale::Int=20)
         SDL_Quit()
     end
 end
-function animateMaze(height::Int, width::Int, scale::Int=20, speed::Int=1)
+function animateMaze(height::Int, width::Int, scale::Int=20, speed=1)
     created = false
     @assert SDL_Init(SDL_INIT_EVERYTHING) == 0 "error initializing SDL: $(unsafe_string(SDL_GetError()))"
     win = SDL_CreateWindow("Maze", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (height+2)*scale, (width+2)*scale, SDL_WINDOW_SHOWN)
@@ -231,19 +233,16 @@ function animateMaze(height::Int, width::Int, scale::Int=20, speed::Int=1)
                 lab.goal = (goal_y, goal_x)
 
                 lab.path, lab.short_path = solve(lab)
-
                 lab.curr_node = nothing
                 frame(lab, scale, renderer)
                 SDL_RenderPresent(renderer)
                 for node in lab.path
-                    lab.curr_node = node
-                    pathFrame(lab, scale, renderer)
+                    pathFrame(lab, scale, renderer, node)
                     SDL_RenderPresent(renderer)
                     SDL_Delay(floor(Int, 50/speed))
                 end
                 for node in lab.short_path
-                    lab.curr_node = node
-                    pathFrame(lab, scale, renderer, true)
+                    pathFrame(lab, scale, renderer,node, true)
                     SDL_RenderPresent(renderer)
                     SDL_Delay(floor(Int, 50/speed))
                 end
@@ -257,6 +256,7 @@ function animateMaze(height::Int, width::Int, scale::Int=20, speed::Int=1)
         SDL_DestroyWindow(win)
         SDL_Quit()
     end
+    return
 end
 
 function solve(maze::Maze)
@@ -269,7 +269,6 @@ function solve(maze::Maze)
     start = maze.start
     goal = maze.goal
     
-
     if !isnothing(start)&&!isnothing(goal)
 
         startNode = maze.nodes[start[1], start[2]]
@@ -280,19 +279,19 @@ function solve(maze::Maze)
 
         #get the first direction
         #if coming southwards, point must be (1, ...)
-        if start[1] == 1 && startNode.connections[1]
+        if start[1] == 1 && startNode.connections[1] && isnothing(startNode.neighbors[1])
             direction = SOUTH
         #if coming northwards, point must be (height, ...)
-        elseif start[1] == height && startNode.connections[3]
+        elseif start[1] == height && startNode.connections[3] && isnothing(startNode.neighbors[3])
             direction = NORTH
         #if coming eastwards, point must be (..., 1)
-        elseif start[2] == 1 && startNode.connections[2]
+        elseif start[2] == 1 && startNode.connections[2] && isnothing(startNode.neighbors[2])
             direction = EAST
         #if coming westwards, point must be (..., width)
-        elseif start[2] == width && startNode.connections[4]
+        elseif start[2] == width && startNode.connections[4] && isnothing(startNode.neighbors[4])
             direction = WEST
         end
-
+        println(direction)
         #initialize the path
         solution = [startNode]
 
@@ -374,22 +373,6 @@ function solve(maze::Maze)
 
         end 
         
-
-        #get the last direction
-        #if going southwards, point must be (height, ...)
-        if start[1] == height && startNode.connections[3]
-            direction = SOUTH
-        #if going northwards, point must be (1, ...)
-        elseif start[1] == 1 && startNode.connections[1]
-            direction = NORTH
-        #if going eastwards, point must be (..., width)
-        elseif start[2] == width && startNode.connections[4]
-            direction = EAST
-        #if going westwards, point must be (..., 1)
-        elseif start[2] == 1 && startNode.connections[2]
-            direction = WEST
-        end
-
         #add the end node to the path
         push!(short_sol, goalNode)
         return (solution, short_sol)

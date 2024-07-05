@@ -2,6 +2,7 @@
 
 Usages:
 ```maze(height, width)``` returns a maze struct
+
 ```visualize(maze(height, width), scale)```
 ```scale``` is set to 20 by default
 

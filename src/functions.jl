@@ -268,7 +268,7 @@ function solve(maze::Maze)
     #get the start and end position
     start = maze.start
     goal = maze.goal
-    
+
     if !isnothing(start)&&!isnothing(goal)
 
         startNode = maze.nodes[start[1], start[2]]
@@ -291,7 +291,6 @@ function solve(maze::Maze)
         elseif start[2] == width && startNode.connections[4] && isnothing(startNode.neighbors[4])
             direction = WEST
         end
-        println(direction)
         #initialize the path
         solution = [startNode]
 

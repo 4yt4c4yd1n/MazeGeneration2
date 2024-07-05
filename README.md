@@ -1,6 +1,7 @@
 <img src="examples/maze.gif" width="250">
 
 Usages:
+
 ```maze(height, width)``` returns a maze struct
 
 ```visualize(maze(height, width), scale)```

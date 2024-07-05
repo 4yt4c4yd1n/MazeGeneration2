@@ -7,3 +7,5 @@ Usages:
 
 ```animateMaze(height, width, scale, speed)```
 ```speed``` is set to 1 by default
+
+![Maze 2](examples/maze2.gif)

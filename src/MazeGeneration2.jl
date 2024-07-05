@@ -132,5 +132,4 @@ function maze(height::Int, width::Int)
     lab.path, lab.short_path = solve(lab)
     return lab
 end
-animateMaze(5, 5, 100)
 end # module MazeGeneration2

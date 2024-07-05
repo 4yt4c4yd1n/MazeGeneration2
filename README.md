@@ -1,4 +1,4 @@
-<img src="examples/maze2.gif" width="250">
+<img src="examples/maze.gif" width="250">
 
 Usages:
 
